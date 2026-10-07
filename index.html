@@ -38,27 +38,36 @@ body{
 }
 #opening.hide{opacity:0;visibility:hidden}
 #opVideo{
-  position:absolute;inset:0;
-  width:100%;height:100%;object-fit:cover;
-  filter:brightness(.7);
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:auto;
+  height:80%;
+  aspect-ratio:9/16;
+  object-fit:cover;
+  border-radius:20px;
+  filter:brightness(.8);
+  box-shadow:0 30px 80px rgba(0,0,0,.8);
 }
 .op-overlay{
   position:absolute;inset:0;
   background:
-    radial-gradient(circle at 50% 50%,transparent 30%,rgba(0,0,0,.7)),
-    linear-gradient(180deg,rgba(0,0,0,.4),rgba(0,0,0,.85));
+    radial-gradient(circle at 50% 50%,transparent 40%,rgba(0,0,0,.7)),
+    linear-gradient(180deg,rgba(0,0,0,.3),rgba(0,0,0,.85));
   pointer-events:none;
 }
 .op-content{
   position:relative;z-index:3;
   text-align:center;padding:20px;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-end;
+  height:100%;padding-bottom:12vh;
 }
 .op-logo{
   font-family:"Space Grotesk",sans-serif;
-  font-size:clamp(42px,10vw,88px);
-  font-weight:700;letter-spacing:-2px;color:#fff;
-  line-height:.95;
-  margin-bottom:16px;
+  font-size:clamp(32px,7vw,56px);
+  font-weight:700;letter-spacing:-1.5px;color:#fff;
+  line-height:.95;margin-bottom:12px;
   text-shadow:0 10px 40px rgba(0,0,0,.8);
   animation:openIn .9s cubic-bezier(.16,1,.3,1);
 }
@@ -68,17 +77,17 @@ body{
   text-shadow:0 0 30px var(--accent-glow);
 }
 .op-sub{
-  font-size:12px;letter-spacing:6px;
+  font-size:11px;letter-spacing:5px;
   color:rgba(255,255,255,.7);
-  font-weight:700;margin-bottom:32px;
+  font-weight:700;margin-bottom:24px;
   animation:fadeUp .9s .2s both cubic-bezier(.16,1,.3,1);
 }
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .op-enter{
-  display:inline-flex;align-items:center;gap:12px;
-  padding:16px 36px;border-radius:999px;
+  display:inline-flex;align-items:center;gap:10px;
+  padding:14px 30px;border-radius:999px;
   background:linear-gradient(135deg,var(--accent),var(--accent-2));
-  color:#031210;font-size:15px;font-weight:800;letter-spacing:.5px;
+  color:#031210;font-size:14px;font-weight:800;letter-spacing:.5px;
   box-shadow:0 20px 60px var(--accent-glow),0 0 0 0 var(--accent-glow);
   animation:pulseRing 2s infinite;
   transition:all .3s cubic-bezier(.16,1,.3,1);
@@ -88,47 +97,36 @@ body{
 .op-enter:active{transform:scale(.98)}
 @keyframes pulseRing{
   0%{box-shadow:0 20px 60px var(--accent-glow),0 0 0 0 var(--accent-glow)}
-  70%{box-shadow:0 20px 60px var(--accent-glow),0 0 0 24px rgba(0,0,0,0)}
+  70%{box-shadow:0 20px 60px var(--accent-glow),0 0 0 20px rgba(0,0,0,0)}
   100%{box-shadow:0 20px 60px var(--accent-glow),0 0 0 0 rgba(0,0,0,0)}
 }
-.op-enter svg{width:20px;height:20px}
+.op-enter svg{width:18px;height:18px}
 .op-enter.hide{opacity:0;pointer-events:none;transform:scale(.8)}
 .op-skip{
-  position:absolute;bottom:32px;right:32px;z-index:4;
-  padding:12px 22px;border-radius:999px;
+  position:absolute;bottom:24px;right:24px;z-index:4;
+  padding:10px 18px;border-radius:999px;
   background:rgba(255,255,255,.08);
   backdrop-filter:blur(12px);
   border:1px solid rgba(255,255,255,.2);
-  color:#fff;font-size:12px;font-weight:800;letter-spacing:2px;
-  display:flex;align-items:center;gap:8px;
+  color:#fff;font-size:11px;font-weight:800;letter-spacing:2px;
+  display:flex;align-items:center;gap:6px;
   transition:all .25s;cursor:pointer;
 }
 .op-skip:hover{background:rgba(255,255,255,.18);transform:translateX(3px)}
-.op-mute{
-  position:absolute;bottom:32px;left:32px;z-index:4;
-  width:44px;height:44px;border-radius:50%;
-  background:rgba(255,255,255,.08);
-  backdrop-filter:blur(12px);
-  border:1px solid rgba(255,255,255,.2);
-  color:#fff;display:flex;align-items:center;justify-content:center;
-  transition:all .25s;cursor:pointer;opacity:0;pointer-events:none;
-}
-.op-mute.on{opacity:1;pointer-events:auto}
-.op-mute:hover{background:rgba(255,255,255,.18)}
 
 /* === BACKGROUND VIDEO === */
 #bgVideo{
   position:fixed;inset:0;z-index:0;
   width:100%;height:100%;object-fit:cover;
-  filter:brightness(.35) saturate(.9);
-  opacity:.6;
+  filter:brightness(.5) saturate(1);
+  opacity:.75;
 }
 #bgOverlay{
   position:fixed;inset:0;z-index:0;
   background:
-    radial-gradient(circle at 30% 20%,rgba(77,212,192,.08),transparent 50%),
-    radial-gradient(circle at 70% 80%,rgba(168,85,247,.06),transparent 50%),
-    linear-gradient(180deg,rgba(8,9,13,.7),rgba(8,9,13,.95));
+    radial-gradient(circle at 30% 20%,rgba(77,212,192,.05),transparent 50%),
+    radial-gradient(circle at 70% 80%,rgba(168,85,247,.04),transparent 50%),
+    linear-gradient(180deg,rgba(8,9,13,.5),rgba(8,9,13,.85));
   pointer-events:none;
 }
 
@@ -517,8 +515,8 @@ body.light #bgOverlay{
   .hero{padding:40px 20px 60px}
   .detail-actions button span{display:none}
   .detail-actions button{padding:11px 14px}
-  .op-skip{bottom:20px;right:20px;padding:10px 16px}
-  .op-mute{bottom:20px;left:20px}
+  .op-skip{bottom:16px;right:16px;padding:8px 14px}
+  #opVideo{height:75%}
 }
 </style>
 </head>
@@ -537,12 +535,12 @@ body.light #bgOverlay{
       <svg viewBox="0 0 24 24" fill="currentColor">
         <path d="M8 5v14l11-7z"/>
       </svg>
-      <span>Masuk + Putar</span>
+      <span>Lanjut Maszeh</span>
     </button>
   </div>
   <button class="op-skip" id="opSkip">
     SKIP
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5">
       <path d="M5 12h14M12 5l7 7-7 7"/>
     </svg>
   </button>
@@ -718,7 +716,6 @@ function timeAgo(iso){
     setTimeout(() => op.remove(), 900);
   }
 
-  // Tombol masuk + putar (unmute + play)
   enterBtn.addEventListener("click", async () => {
     if (started) return;
     started = true;
@@ -729,22 +726,17 @@ function timeAgo(iso){
       enterBtn.classList.add("hide");
     } catch(e) {
       console.log("Autoplay gagal:", e.message);
-      // Kalau gagal, tetep lanjut
       close();
     }
   });
 
-  // Tombol skip
   skipBtn.addEventListener("click", close);
-
-  // Video selesai → close
   vid.addEventListener("ended", close);
   vid.addEventListener("error", () => {
     console.log("Video opening error");
     close();
   });
 
-  // Safety: max 30 detik
   setTimeout(close, 30000);
 })();
 
@@ -1064,7 +1056,7 @@ $("topBtn").addEventListener("click", () => window.scrollTo({ top: 0, behavior: 
 
 /* ============ INIT ============ */
 loadScripts();
-console.log("kewehhh v4 loaded 🎬");
+console.log("kewehhh v5 loaded 🎬");
 </script>
 
 </body>
