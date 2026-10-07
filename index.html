@@ -115,25 +115,6 @@ body{
 }
 .op-skip:hover{background:rgba(255,255,255,.18);transform:translateX(3px)}
 
-/* === BACKGROUND GAMBAR (FIXED) === */
-#bgImage{
-  position:fixed;inset:0;z-index:0;
-  width:100%;height:100%;
-  object-fit:cover;
-  opacity:0;
-  transition:opacity .8s ease;
-  will-change:transform,opacity;
-}
-#bgImage.loaded{opacity:.4}
-#bgOverlay{
-  position:fixed;inset:0;z-index:0;
-  background:
-    radial-gradient(circle at 50% 50%,transparent 30%,rgba(8,9,13,.8)),
-    linear-gradient(180deg,rgba(8,9,13,.4),rgba(8,9,13,.95));
-  pointer-events:none;
-  transition:opacity .3s ease;
-}
-
 /* === WRAPPER === */
 .wrap{position:relative;z-index:1}
 
@@ -214,11 +195,23 @@ body{
   position:relative;width:100%;min-height:340px;
   overflow:hidden;display:flex;align-items:flex-end;
   padding:60px max(24px,6%) 60px;
-  background:linear-gradient(135deg,rgba(10,12,16,.6),rgba(10,12,16,.3));
+  background:#08090d;
 }
-.hero::before{
-  content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg,transparent 40%,rgba(8,9,13,.95));
+#heroBg{
+  position:absolute;inset:0;z-index:0;
+  width:100%;height:100%;
+  object-fit:cover;
+  object-position:center 20%;
+  opacity:0;
+  transition:opacity .8s ease;
+  will-change:transform;
+}
+#heroBg.loaded{opacity:.55}
+#heroOverlay{
+  position:absolute;inset:0;z-index:1;
+  background:
+    linear-gradient(180deg,rgba(8,9,13,.3) 0%,rgba(8,9,13,.5) 50%,rgba(8,9,13,.95) 100%),
+    radial-gradient(circle at 50% 50%,transparent 30%,rgba(8,9,13,.5));
   pointer-events:none;
 }
 .hero-content{
@@ -273,11 +266,11 @@ body{
 .hero-stat span{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
 
 /* === MAIN === */
-.main{max-width:1320px;margin:0 auto;padding:0 max(20px,4%) 120px;position:relative}
-.main::before{
-  content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(8,9,13,.9),rgba(8,9,13,.98));
-  z-index:-1;pointer-events:none;
+.main{
+  max-width:1320px;margin:0 auto;
+  padding:0 max(20px,4%) 120px;
+  position:relative;
+  background:var(--bg);
 }
 .page{animation:fadeIn .5s both}
 @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
@@ -512,9 +505,9 @@ pre code{
 .footer{
   text-align:center;padding:40px 20px;
   color:var(--muted);font-size:12px;
-  border-top:1px solid var(--line);margin-top:60px;
+  border-top:1px solid var(--line);
   position:relative;z-index:1;
-  background:rgba(8,9,13,.95);
+  background:var(--bg);
 }
 
 /* === BACK TO TOP === */
@@ -535,17 +528,11 @@ body.light{
   --text:#0a0c10;--muted:#586274;--muted-2:#8a96a8;
 }
 body.light .site-header{background:rgba(245,247,250,.85)}
-body.light .hero-title{color:#0a0c10}
-body.light .hero-sub{color:rgba(0,0,0,.6)}
-body.light #bgOverlay{
+body.light #heroOverlay{
   background:
-    radial-gradient(circle at 50% 50%,transparent 30%,rgba(245,247,250,.8)),
-    linear-gradient(180deg,rgba(245,247,250,.4),rgba(245,247,250,.95));
+    linear-gradient(180deg,rgba(245,247,250,.3) 0%,rgba(245,247,250,.5) 50%,rgba(245,247,250,.95) 100%),
+    radial-gradient(circle at 50% 50%,transparent 30%,rgba(245,247,250,.5));
 }
-body.light .main::before{
-  background:linear-gradient(180deg,rgba(245,247,250,.9),rgba(245,247,250,.98));
-}
-body.light .footer{background:rgba(245,247,250,.95)}
 
 /* === ANIMASI TAMBAHAN === */
 .reveal{
@@ -601,14 +588,12 @@ body.light .footer{background:rgba(245,247,250,.95)}
   </button>
 </div>
 
-<!-- BACKGROUND GAMBAR (FIXED) -->
-<img id="bgImage" src="https://files.catbox.moe/urhjav.webp" alt="">
-<div id="bgOverlay"></div>
-
 <div class="wrap">
 
 <!-- HERO -->
 <section class="hero">
+  <img id="heroBg" src="https://files.catbox.moe/urhjav.webp" alt="">
+  <div id="heroOverlay"></div>
   <div class="hero-content">
     <p class="hero-eyebrow">ROBLOX / SCRIPT ARCHIVE</p>
     <h1 class="hero-title"><span id="typed">kewehhh</span><span class="cursor"></span></h1>
@@ -791,32 +776,24 @@ function timeAgo(iso){
 
 /* ============ BACKGROUND PARALLAX ZOOM ============ */
 (function(){
-  const bg = $("bgImage");
-  const overlay = $("bgOverlay");
+  const bg = $("heroBg");
   if (!bg) return;
 
-  // Load gambar
   bg.addEventListener("load", () => bg.classList.add("loaded"));
   if (bg.complete) bg.classList.add("loaded");
 
   let ticking = false;
   function update(){
     const y = window.scrollY;
-    const maxScroll = 800;
+    const maxScroll = 600;
     const progress = Math.min(y / maxScroll, 1);
 
     // Zoom out (makin gede pas scroll)
-    const scale = 1 + progress * 0.5;
-    // Parallax (gerak pelan ke atas)
-    const translateY = progress * -60;
-    // Opacity makin kelihatan
-    const opacity = 0.4 + progress * 0.5;
+    const scale = 1 + progress * 0.4;
+    // Parallax (gerak pelan)
+    const translateY = progress * 40;
 
     bg.style.transform = `scale(${scale}) translateY(${translateY}px)`;
-    bg.style.opacity = opacity;
-
-    // Overlay makin transparan
-    if (overlay) overlay.style.opacity = 1 - progress * 0.6;
 
     ticking = false;
   }
@@ -1196,7 +1173,7 @@ let observeReveals;
 
 /* ============ INIT ============ */
 loadScripts();
-console.log("kewehhh v7 loaded 🎬");
+console.log("kewehhh v8 loaded 🎬");
 </script>
 
 </body>
