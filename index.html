@@ -666,4 +666,282 @@ async function loadScripts(){
       _id: String(s.id),
       title: s.title || "Untitled",
       game: s.game || "Universal",
-      image: s.image
+      image: s.image || "",
+      views: s.views || 0,
+      likeCount: s.likeCount || 0,
+      keyless: s.keyless !== false,
+      isPatched: !!s.isPatched,
+      verified: !!s.verified,
+      features: s.features || "",
+      script: s.script || ""
+    }));
+    filtered = scripts;
+    updateStats(d);
+    fillGameFilter();
+    applyFilters();
+  } catch(e) {
+    console.error(e);
+    grid.innerHTML = "";
+    $("empty").hidden = false;
+    $("empty").textContent = "Script belum tersedia. Coba lagi nanti.";
+  }
+}
+
+function updateStats(d){
+  $("statTotal").textContent = d.total || scripts.length;
+  $("statKeyless").textContent = scripts.filter(s => s.keyless).length;
+  $("statUpdated").textContent = timeAgo(d.updatedAt);
+}
+
+function fillGameFilter(){
+  const sel = $("gameSelect");
+  const games = [...new Set(scripts.map(s => s.game).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Semua</option>' + games.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join("");
+}
+
+function cardHTML(s, idx){
+  const url = s.image;
+  const isNew = s.views < 100;
+  return `<button class="script-card" data-id="${esc(s._id)}" style="animation-delay:${Math.min(idx*40,600)}ms">
+    <div class="image-wrap">
+      ${url
+        ? `<img loading="lazy" src="${esc(url)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'image-fallback',textContent:'D'}))">`
+        : `<div class="image-fallback">D</div>`}
+      <span class="status ${s.isPatched ? "patched" : "working"}">${s.isPatched ? "PATCHED" : "WORKING"}</span>
+      ${isNew ? '<span class="badge-new">NEW</span>' : ""}
+    </div>
+    <div class="card-body">
+      <p class="game-name">${esc(s.game)}</p>
+      <h2>${esc(s.title)}</h2>
+      <div class="stars">${"★".repeat(Math.min(5, Math.round((s.likeCount||0)/10))) || "☆"}</div>
+      <div class="card-meta">
+        <span>👁 ${compact(s.views)}</span>
+        <span>❤ ${compact(s.likeCount)}</span>
+        ${s.verified ? '<span class="verified">✓ VERIFIED</span>' : ""}
+      </div>
+    </div>
+  </button>`;
+}
+
+function applyFilters(){
+  let list = [...scripts];
+  if (activeQuery){
+    const q = activeQuery.toLowerCase();
+    list = list.filter(s => (s.title + " " + s.game + " " + s.features).toLowerCase().includes(q));
+  }
+  if (activeGame) list = list.filter(s => s.game === activeGame);
+  if (activeFilter === "keyless") list = list.filter(s => s.keyless);
+  if (activeFilter === "key") list = list.filter(s => !s.keyless);
+  if (activeSort === "views") list.sort((a,b) => b.views - a.views);
+  if (activeSort === "newest") list.sort((a,b) => (b.likeCount||0) - (a.likeCount||0));
+  if (activeSort === "az") list.sort((a,b) => a.title.localeCompare(b.title));
+
+  filtered = list;
+  const grid = $("grid");
+  grid.innerHTML = list.map(cardHTML).join("");
+  $("empty").hidden = list.length > 0;
+  if (!list.length) $("empty").textContent = "Script tidak ditemukan";
+}
+
+/* ============ EVENTS ============ */
+$("searchForm").addEventListener("submit", e => e.preventDefault());
+$("searchInput").addEventListener("input", e => {
+  activeQuery = e.target.value.trim();
+  clearTimeout(window._st);
+  window._st = setTimeout(applyFilters, 200);
+});
+$("sortSelect").addEventListener("change", e => { activeSort = e.target.value; applyFilters(); });
+$("gameSelect").addEventListener("change", e => { activeGame = e.target.value; applyFilters(); });
+$$(".chip").forEach(c => c.addEventListener("click", () => {
+  $$(".chip").forEach(x => x.classList.remove("active"));
+  c.classList.add("active");
+  activeFilter = c.dataset.filter;
+  applyFilters();
+}));
+
+/* ============ DETAIL ============ */
+let selectedScript = null, scriptCopied = false;
+
+function isBookmarked(id){
+  try { return JSON.parse(localStorage.getItem("kewehhh_bm") || "[]").includes(id); }
+  catch { return false; }
+}
+function toggleBookmark(id){
+  try {
+    let arr = JSON.parse(localStorage.getItem("kewehhh_bm") || "[]");
+    if (arr.includes(id)) arr = arr.filter(x => x !== id);
+    else arr.push(id);
+    localStorage.setItem("kewehhh_bm", JSON.stringify(arr));
+  } catch {}
+}
+
+function openScript(item){
+  selectedScript = item;
+  scriptCopied = false;
+  renderDetail();
+  $("overlay").hidden = false;
+  document.body.style.overflow = "hidden";
+}
+function closeDetail(){
+  $("overlay").hidden = true;
+  document.body.style.overflow = "";
+  selectedScript = null;
+}
+function renderDetail(){
+  const s = selectedScript;
+  if (!s) return;
+  const url = s.image;
+  const bm = isBookmarked(s._id);
+  $("panel").innerHTML = `
+    <div class="detail-topbar">
+      <button class="icon-btn" id="backBtn">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <div class="detail-actions">
+        <button class="bookmark ${bm ? "on" : ""}" id="bmBtn" title="Bookmark">
+          ${bm ? "★" : "☆"} <span>Favorit</span>
+        </button>
+        <button class="copy" id="copyBtn" ${s.script ? "" : "disabled"}>
+          ${scriptCopied ? "✓ Tersalin" : "Salin"} <span>Script</span>
+        </button>
+      </div>
+    </div>
+    <div class="detail-cover">
+      ${url ? `<img src="${esc(url)}" alt="">` : ""}
+      <div>
+        <p>${esc(s.game)}</p>
+        <h2>${esc(s.title)}</h2>
+      </div>
+    </div>
+    <div class="detail-content">
+      <div class="detail-stats">
+        <span>👁 ${compact(s.views)} views</span>
+        <span>❤ ${compact(s.likeCount)} likes</span>
+        ${s.verified ? '<span style="color:var(--accent)">✓ Verified</span>' : ""}
+      </div>
+      <div class="detail-key">${s.keyless ? "TANPA KEY" : "BUTUH KEY"}</div>
+      <h3>KETERANGAN</h3>
+      <p class="features-text">${esc(s.features || "—")}</p>
+      <h3>SCRIPT</h3>
+      <pre><code>${esc(s.script || "—")}</code></pre>
+    </div>
+  `;
+  $("backBtn").onclick = closeDetail;
+  $("copyBtn").onclick = copyScript;
+  $("bmBtn").onclick = () => { toggleBookmark(s._id); renderDetail(); };
+}
+function copyScript(){
+  if (!selectedScript?.script) return;
+  const text = selectedScript.script.trim();
+  const done = () => {
+    scriptCopied = true;
+    renderDetail();
+    setTimeout(() => { scriptCopied = false; if (selectedScript) renderDetail(); }, 1800);
+  };
+  if (navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else fallbackCopy(text, done);
+}
+function fallbackCopy(text, done){
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  document.body.append(ta);
+  ta.select();
+  document.execCommand("copy");
+  ta.remove();
+  done();
+}
+$("overlay").addEventListener("mousedown", e => { if (e.target === $("overlay")) closeDetail(); });
+$("grid").addEventListener("click", e => {
+  const c = e.target.closest(".script-card");
+  if (!c) return;
+  const f = scripts.find(s => s._id === c.dataset.id);
+  if (f) openScript(f);
+});
+
+/* ============ TABS ============ */
+const PAGES = { scripts: "scriptsPage", owner: "ownerPage" };
+function setTab(tab){
+  if (!PAGES[tab]) tab = "scripts";
+  $$(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  Object.keys(PAGES).forEach(k => { const el = $(PAGES[k]); if (el) el.hidden = k !== tab; });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+$$(".tab").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+$("homeBtn").addEventListener("click", () => setTab("scripts"));
+
+/* ============ BACK TO TOP ============ */
+window.addEventListener("scroll", () => {
+  $("topBtn").classList.toggle("on", window.scrollY > 400);
+});
+$("topBtn").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+
+/* ============ THEME SYSTEM ============ */
+(function(){
+  const THEMES = {
+    teal:   { accent: "#4dd4c0", accent2: "#3bb8a6", glow: "rgba(77,212,192,.5)" },
+    purple: { accent: "#a855f7", accent2: "#8b5cf6", glow: "rgba(168,85,247,.5)" },
+    red:    { accent: "#ff4757", accent2: "#ff6b6b", glow: "rgba(255,71,87,.5)" },
+    blue:   { accent: "#3b82f6", accent2: "#2563eb", glow: "rgba(59,130,246,.5)" }
+  };
+  function applyTheme(name){
+    const t = THEMES[name] || THEMES.teal;
+    document.documentElement.style.setProperty("--accent", t.accent);
+    document.documentElement.style.setProperty("--accent-2", t.accent2);
+    document.documentElement.style.setProperty("--accent-glow", t.glow);
+    localStorage.setItem("kewehhh_theme", name);
+  }
+  function applyMode(mode){
+    document.body.classList.toggle("light", mode === "light");
+    localStorage.setItem("kewehhh_mode", mode);
+  }
+  applyTheme(localStorage.getItem("kewehhh_theme") || "teal");
+  applyMode(localStorage.getItem("kewehhh_mode") || "dark");
+
+  $("modeBtn").addEventListener("click", () => {
+    applyMode(document.body.classList.contains("light") ? "dark" : "light");
+  });
+
+  $("themeBtn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    const existing = document.querySelector(".theme-pop");
+    if (existing) { existing.remove(); return; }
+
+    const pop = document.createElement("div");
+    pop.className = "theme-pop";
+    pop.innerHTML = Object.entries(THEMES).map(([name, t]) => `
+      <div class="theme-swatch ${localStorage.getItem("kewehhh_theme") === name ? "active" : ""}"
+           data-theme="${name}"
+           style="background:linear-gradient(135deg, ${t.accent}, ${t.accent2})"
+           title="${name}"></div>
+    `).join("");
+    document.body.appendChild(pop);
+
+    pop.addEventListener("click", (ev) => {
+      const sw = ev.target.closest("[data-theme]");
+      if (!sw) return;
+      applyTheme(sw.dataset.theme);
+      pop.querySelectorAll(".theme-swatch").forEach(s => s.classList.remove("active"));
+      sw.classList.add("active");
+    });
+
+    setTimeout(() => {
+      document.addEventListener("click", function close(ev){
+        if (!pop.contains(ev.target) && ev.target !== $("themeBtn")) {
+          pop.remove();
+          document.removeEventListener("click", close);
+        }
+      });
+    }, 100);
+  });
+})();
+
+/* ============ INIT ============ */
+loadScripts();
+console.log("kewehhh v3 loaded ✨");
+</script>
+
+</body>
+</html>
