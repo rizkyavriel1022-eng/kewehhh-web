@@ -41,8 +41,7 @@ body{
   position:absolute;
   top:50%;left:50%;
   transform:translate(-50%,-50%);
-  width:auto;
-  height:80%;
+  width:auto;height:80%;
   aspect-ratio:9/16;
   object-fit:cover;
   border-radius:20px;
@@ -92,6 +91,7 @@ body{
   animation:pulseRing 2s infinite;
   transition:all .3s cubic-bezier(.16,1,.3,1);
   cursor:pointer;border:none;
+  position:relative;overflow:hidden;
 }
 .op-enter:hover{transform:scale(1.05)}
 .op-enter:active{transform:scale(.98)}
@@ -111,23 +111,27 @@ body{
   color:#fff;font-size:11px;font-weight:800;letter-spacing:2px;
   display:flex;align-items:center;gap:6px;
   transition:all .25s;cursor:pointer;
+  overflow:hidden;
 }
 .op-skip:hover{background:rgba(255,255,255,.18);transform:translateX(3px)}
 
-/* === BACKGROUND VIDEO === */
-#bgVideo{
+/* === BACKGROUND GAMBAR (FIXED) === */
+#bgImage{
   position:fixed;inset:0;z-index:0;
-  width:100%;height:100%;object-fit:cover;
-  filter:brightness(.5) saturate(1);
-  opacity:.75;
+  width:100%;height:100%;
+  object-fit:cover;
+  opacity:0;
+  transition:opacity .8s ease;
+  will-change:transform,opacity;
 }
+#bgImage.loaded{opacity:.4}
 #bgOverlay{
   position:fixed;inset:0;z-index:0;
   background:
-    radial-gradient(circle at 30% 20%,rgba(77,212,192,.05),transparent 50%),
-    radial-gradient(circle at 70% 80%,rgba(168,85,247,.04),transparent 50%),
-    linear-gradient(180deg,rgba(8,9,13,.5),rgba(8,9,13,.85));
+    radial-gradient(circle at 50% 50%,transparent 30%,rgba(8,9,13,.8)),
+    linear-gradient(180deg,rgba(8,9,13,.4),rgba(8,9,13,.95));
   pointer-events:none;
+  transition:opacity .3s ease;
 }
 
 /* === WRAPPER === */
@@ -168,6 +172,7 @@ body{
   padding:9px 18px;border-radius:999px;
   font-size:13px;font-weight:600;color:var(--muted);
   white-space:nowrap;transition:all .25s;
+  position:relative;overflow:hidden;
 }
 .tab:hover{color:var(--text)}
 .tab.active{
@@ -182,6 +187,7 @@ body{
   width:40px;height:40px;border-radius:50%;
   color:var(--muted);background:transparent;
   transition:all .2s;flex-shrink:0;
+  position:relative;overflow:hidden;
 }
 .icon-btn:hover{background:var(--card-2);color:var(--text);transform:rotate(15deg)}
 
@@ -205,20 +211,26 @@ body{
 
 /* === HERO === */
 .hero{
-  position:relative;width:100%;min-height:320px;max-height:70vh;
+  position:relative;width:100%;min-height:340px;
   overflow:hidden;display:flex;align-items:flex-end;
-  padding:60px max(24px,6%) 80px;
+  padding:60px max(24px,6%) 60px;
+  background:linear-gradient(135deg,rgba(10,12,16,.6),rgba(10,12,16,.3));
 }
 .hero::before{
   content:"";position:absolute;inset:0;
   background:linear-gradient(180deg,transparent 40%,rgba(8,9,13,.95));
   pointer-events:none;
 }
-.hero-content{position:relative;z-index:2;max-width:900px}
+.hero-content{
+  position:relative;z-index:2;max-width:900px;
+  transform:translateY(var(--parallax,0));
+  transition:transform .1s linear;
+}
 .hero-eyebrow{
   font-size:11px;letter-spacing:5px;color:var(--accent);
   font-weight:700;margin-bottom:16px;
   display:flex;align-items:center;gap:10px;
+  animation:fadeUp .8s .1s both cubic-bezier(.16,1,.3,1);
 }
 .hero-eyebrow::before{content:"";width:24px;height:1px;background:var(--accent)}
 .hero-title{
@@ -228,6 +240,15 @@ body{
   line-height:.9;
   text-shadow:0 10px 40px rgba(0,0,0,.5);
 }
+.hero-title #typed{
+  background:linear-gradient(90deg,#fff 0%,var(--accent) 50%,#fff 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:shimmerText 3s linear infinite;
+}
+@keyframes shimmerText{to{background-position:200% center}}
 .hero-title .cursor{
   display:inline-block;width:4px;height:.85em;
   background:var(--accent);margin-left:6px;
@@ -235,8 +256,15 @@ body{
   box-shadow:0 0 12px var(--accent-glow);
 }
 @keyframes blink{50%{opacity:0}}
-.hero-sub{font-size:clamp(14px,2vw,17px);color:rgba(255,255,255,.65);margin-top:20px;max-width:600px}
-.hero-stats{display:flex;gap:32px;margin-top:32px;flex-wrap:wrap}
+.hero-sub{
+  font-size:clamp(14px,2vw,17px);color:rgba(255,255,255,.65);
+  margin-top:20px;max-width:600px;
+  animation:fadeUp .8s .3s both cubic-bezier(.16,1,.3,1);
+}
+.hero-stats{
+  display:flex;gap:32px;margin-top:32px;flex-wrap:wrap;
+  animation:fadeUp .8s .5s both cubic-bezier(.16,1,.3,1);
+}
 .hero-stat b{
   font-family:"Space Grotesk",sans-serif;
   font-size:24px;font-weight:700;color:var(--accent);
@@ -245,7 +273,12 @@ body{
 .hero-stat span{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
 
 /* === MAIN === */
-.main{max-width:1320px;margin:0 auto;padding:0 max(20px,4%) 120px}
+.main{max-width:1320px;margin:0 auto;padding:0 max(20px,4%) 120px;position:relative}
+.main::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(8,9,13,.9),rgba(8,9,13,.98));
+  z-index:-1;pointer-events:none;
+}
 .page{animation:fadeIn .5s both}
 @keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 
@@ -293,6 +326,7 @@ body{
   background:var(--card);border:1px solid var(--line);
   font-size:12.5px;font-weight:600;color:var(--muted);
   transition:all .2s;
+  position:relative;overflow:hidden;
 }
 .chip.active{
   background:var(--accent);color:#031210;border-color:var(--accent);
@@ -316,18 +350,18 @@ body{
   animation:cardIn .5s forwards;
 }
 @keyframes cardIn{to{opacity:1}}
+.script-card::before{
+  content:"";position:absolute;inset:-2px;border-radius:var(--radius);
+  background:linear-gradient(135deg,var(--accent),var(--accent-2),var(--accent));
+  opacity:0;transition:opacity .4s;
+  z-index:-1;filter:blur(12px);
+}
+.script-card:hover::before{opacity:.6}
 .script-card:hover{
   transform:translateY(-6px) scale(1.02);
   border-color:var(--accent);
   box-shadow:0 20px 60px var(--accent-glow),var(--shadow-sm);
 }
-.script-card::after{
-  content:"";position:absolute;inset:0;border-radius:var(--radius);
-  pointer-events:none;
-  background:linear-gradient(135deg,transparent 60%,var(--accent-glow));
-  opacity:0;transition:opacity .4s;
-}
-.script-card:hover::after{opacity:.15}
 
 .image-wrap{position:relative;aspect-ratio:16/9;background:var(--bg-soft);overflow:hidden}
 .image-wrap img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
@@ -353,8 +387,11 @@ body{
   font-size:10px;font-weight:800;letter-spacing:1px;
   background:linear-gradient(135deg,#a855f7,#ec4899);
   color:#fff;
-  box-shadow:0 4px 14px rgba(168,85,247,.4);
-  animation:pulse 2s infinite;
+  animation:pulse 2s infinite,glowBadge 2s infinite;
+}
+@keyframes glowBadge{
+  0%,100%{box-shadow:0 4px 14px rgba(168,85,247,.4)}
+  50%{box-shadow:0 4px 30px rgba(168,85,247,.9)}
 }
 
 .card-body{padding:16px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
@@ -477,6 +514,7 @@ pre code{
   color:var(--muted);font-size:12px;
   border-top:1px solid var(--line);margin-top:60px;
   position:relative;z-index:1;
+  background:rgba(8,9,13,.95);
 }
 
 /* === BACK TO TOP === */
@@ -501,10 +539,27 @@ body.light .hero-title{color:#0a0c10}
 body.light .hero-sub{color:rgba(0,0,0,.6)}
 body.light #bgOverlay{
   background:
-    radial-gradient(circle at 30% 20%,rgba(77,212,192,.1),transparent 50%),
-    radial-gradient(circle at 70% 80%,rgba(168,85,247,.08),transparent 50%),
-    linear-gradient(180deg,rgba(245,247,250,.7),rgba(245,247,250,.95));
+    radial-gradient(circle at 50% 50%,transparent 30%,rgba(245,247,250,.8)),
+    linear-gradient(180deg,rgba(245,247,250,.4),rgba(245,247,250,.95));
 }
+body.light .main::before{
+  background:linear-gradient(180deg,rgba(245,247,250,.9),rgba(245,247,250,.98));
+}
+body.light .footer{background:rgba(245,247,250,.95)}
+
+/* === ANIMASI TAMBAHAN === */
+.reveal{
+  opacity:0;transform:translateY(30px);
+  transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);
+}
+.reveal.on{opacity:1;transform:none}
+.ripple{
+  position:absolute;border-radius:50%;
+  background:rgba(255,255,255,.4);
+  transform:scale(0);animation:rippleAnim .6s linear;
+  pointer-events:none;
+}
+@keyframes rippleAnim{to{transform:scale(4);opacity:0}}
 
 @media(max-width:700px){
   .main{padding:0 16px 100px}
@@ -512,7 +567,7 @@ body.light #bgOverlay{
   .tab{padding:8px 14px;font-size:12px}
   .brand{font-size:17px}
   .script-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
-  .hero{padding:40px 20px 60px}
+  .hero{padding:40px 20px 40px}
   .detail-actions button span{display:none}
   .detail-actions button{padding:11px 14px}
   .op-skip{bottom:16px;right:16px;padding:8px 14px}
@@ -546,10 +601,8 @@ body.light #bgOverlay{
   </button>
 </div>
 
-<!-- BACKGROUND VIDEO -->
-<video id="bgVideo" autoplay muted loop playsinline>
-  <source src="https://files.catbox.moe/wwskhf.mp4" type="video/mp4">
-</video>
+<!-- BACKGROUND GAMBAR (FIXED) -->
+<img id="bgImage" src="https://files.catbox.moe/urhjav.webp" alt="">
 <div id="bgOverlay"></div>
 
 <div class="wrap">
@@ -732,12 +785,48 @@ function timeAgo(iso){
 
   skipBtn.addEventListener("click", close);
   vid.addEventListener("ended", close);
-  vid.addEventListener("error", () => {
-    console.log("Video opening error");
-    close();
-  });
-
+  vid.addEventListener("error", () => { close(); });
   setTimeout(close, 30000);
+})();
+
+/* ============ BACKGROUND PARALLAX ZOOM ============ */
+(function(){
+  const bg = $("bgImage");
+  const overlay = $("bgOverlay");
+  if (!bg) return;
+
+  // Load gambar
+  bg.addEventListener("load", () => bg.classList.add("loaded"));
+  if (bg.complete) bg.classList.add("loaded");
+
+  let ticking = false;
+  function update(){
+    const y = window.scrollY;
+    const maxScroll = 800;
+    const progress = Math.min(y / maxScroll, 1);
+
+    // Zoom out (makin gede pas scroll)
+    const scale = 1 + progress * 0.5;
+    // Parallax (gerak pelan ke atas)
+    const translateY = progress * -60;
+    // Opacity makin kelihatan
+    const opacity = 0.4 + progress * 0.5;
+
+    bg.style.transform = `scale(${scale}) translateY(${translateY}px)`;
+    bg.style.opacity = opacity;
+
+    // Overlay makin transparan
+    if (overlay) overlay.style.opacity = 1 - progress * 0.6;
+
+    ticking = false;
+  }
+  window.addEventListener("scroll", () => {
+    if (!ticking){
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive: true });
+  update();
 })();
 
 /* ============ TYPING ============ */
@@ -857,6 +946,7 @@ function applyFilters(){
   grid.innerHTML = list.map(cardHTML).join("");
   $("empty").hidden = list.length > 0;
   if (!list.length) $("empty").textContent = "Script tidak ditemukan";
+  setTimeout(observeReveals, 100);
 }
 
 /* ============ EVENTS ============ */
@@ -1054,9 +1144,59 @@ $("topBtn").addEventListener("click", () => window.scrollTo({ top: 0, behavior: 
   });
 })();
 
+/* ============ ANIMASI TAMBAHAN ============ */
+let observeReveals;
+
+(function(){
+  const heroContent = document.querySelector(".hero-content");
+  if (heroContent){
+    window.addEventListener("scroll", () => {
+      const y = window.scrollY;
+      if (y < 600) {
+        heroContent.style.setProperty("--parallax", (y * 0.3) + "px");
+      }
+    }, { passive: true });
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting){
+        e.target.classList.add("on");
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+  observeReveals = function(){
+    document.querySelectorAll(".page-head, .toolbar, .script-card").forEach(el => {
+      if (!el.classList.contains("reveal") && !el.classList.contains("on")){
+        el.classList.add("reveal");
+        observer.observe(el);
+      }
+    });
+  };
+  observeReveals();
+
+  document.addEventListener("click", (e) => {
+    const target = e.target.closest(".script-card, .chip, .tab, .icon-btn, .op-enter, .op-skip");
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = e.clientX - rect.left - size/2;
+    const y = e.clientY - rect.top - size/2;
+    const ripple = document.createElement("span");
+    ripple.className = "ripple";
+    ripple.style.width = ripple.style.height = size + "px";
+    ripple.style.left = x + "px";
+    ripple.style.top = y + "px";
+    target.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  });
+})();
+
 /* ============ INIT ============ */
 loadScripts();
-console.log("kewehhh v5 loaded 🎬");
+console.log("kewehhh v7 loaded 🎬");
 </script>
 
 </body>
